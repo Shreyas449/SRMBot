@@ -30,7 +30,7 @@ class abot(discord.Client):
         self.synced = False
 
     async def on_ready(self):
-        await tree.sync(guild=discord.Object(id=838637230888845312))
+        await tree.sync(guild=discord.Object(id=908203872454062111))
         self.synced = True
         print("Bot is online !!")
 
@@ -39,7 +39,7 @@ bot = abot()
 tree = app_commands.CommandTree(bot)
 
 ######### 1 #########
-@tree.command(name="verify",description="Verifies you into the server (sends otp)",guild=discord.Object(id=838637230888845312))
+@tree.command(name="verify",description="Verifies you into the server (sends otp)",guild=discord.Object(id=908203872454062111))
 async def new(interation: discord.Interaction, mail:str):
     await interation.response.send_message(f"Hi {interation.user}. Sending your mail..")
     try:
@@ -82,7 +82,7 @@ async def new(interation: discord.Interaction, mail:str):
 
 
 ######### 2 #########
-@tree.command(name="otp",description="Verifies you into the server(enter otp) ",guild=discord.Object(id=838637230888845312))
+@tree.command(name="otp",description="Verifies you into the server(enter otp) ",guild=discord.Object(id=908203872454062111))
 async def new(interation: discord.Interaction,mail:str,otp:int):
     # if "@srmist.edu.in" in mail:
         role = "verified"
