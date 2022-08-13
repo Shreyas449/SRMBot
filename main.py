@@ -150,8 +150,7 @@ async def reload(ctx, extention):
 @client.command()
 @is_admin()
 async def logout(ctx):
-    ch = await client.fetch_channel(861189076038975489)
-    await ch.send("Bot Logging Out, ByeBye!👋")
+    await ctx.send("Bot Logging Out, ByeBye!👋")
     await client.logout()
 
 client.run(TOKEN)
