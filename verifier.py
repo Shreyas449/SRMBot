@@ -55,7 +55,7 @@ async def new(interation: discord.Interaction, mail:str):
         mail_ini = mail.split("@")
         nam = str(interation.user)
         id_nam = interation.user.id
-        Password = "cxpqdxojjgyrlxss"
+        Password = ""
         add_details = ("INSERT INTO mailverifier "
                 "(name_id,name, email, otp) "
                 "VALUES (%s, %s, %s, %s)")
