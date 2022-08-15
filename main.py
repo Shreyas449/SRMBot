@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.utils import get
 import os
 from dotenv import load_dotenv
-
+import pymongo
 
 
 ### MAIN BOT CLASS ###
@@ -20,6 +20,46 @@ class SRMBot(commands.Bot):
         # )
         # self.c = self.db.cursor(buffered=True)
 
+    # set-up for mongo db atlas
+    # connection string to be used for connection to mongodb atlas 
+    connectionString = "mongodb+srv://username:password@cluster0.xc7pshk.mongodb.net/test"
+
+    # connecting to the database 
+    client = pymongo.MongoClient(connectionString)
+
+    # creating a database named srm_bot_database --> if the database already exist then it will connect to it directly
+    srm_bot_database = client['srm_bot_database']
+
+    # creating a collection
+    # collection for verified users (user_data)
+    user_data = srm_bot_database.user_data
+
+    # collection to be used for verifing user (verification_data)
+    verification_data = srm_bot_database.verification_data
+
+    # use to insert data into the user_data collection --> this is the main collection where verified users data gets stored
+    # refined data storage here
+    def insert_user_data(self,uid,name,stu_mail):
+        user_data = {
+            "uid": uid,
+            "name": name,
+            "stu_mail": stu_mail
+        }
+        user_id = self.user_data.insert_one(user_data).inserted_id
+        print(f"student with: \ninserted_id: {user_id} \nuid: {uid} \nname: {name} \nstud_mail: {stu_mail} \nhas been verified and created!")
+
+
+    # use this to insert data into the verification_data collection --> this is the temporary data collection where all the data gets stored
+    # raw data storage here
+    def insert_verification_data(self,uid, mail_id, otp, attemps):
+        raw_data = {
+            "uid": uid,
+            "mail_id": mail_id,
+            "otp": otp,
+            "attempts": attemps
+        }
+        unverified_user_id = self.verification_data.insert_one(raw_data).inserted_id
+        print(f"unverufied user with id {unverified_user_id} has been created!")
 
     def _member_count(self):
         m = 0
