@@ -9,9 +9,8 @@ class errors(commands.Cog):
     async def on_command_error(self,ctx,error):
         if isinstance(error,commands.CommandNotFound):
             pass 
-        else: 
-            print(error)
 
 
-def setup(client):
-    client.add_cog(errors(client))
+
+async def setup(client):
+    await client.add_cog(errors(client))

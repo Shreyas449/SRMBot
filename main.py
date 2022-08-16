@@ -4,14 +4,19 @@ from discord.utils import get
 import os
 from dotenv import load_dotenv
 import pymongo
+from discord import app_commands
+
 
 
 ### MAIN BOT CLASS ###
-
+load_dotenv()
 class SRMBot(commands.Bot):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.OWNERS = [384643376055844864,759817307957493800,528856976432693259]
+        self.TEST_GUILD = 838637230888845312
+        self.BOT_EMAIL_ID = "srmdiscord@gmail.com"
+        self.BOT_EMAIL_PASSWORD = os.getenv("BOT_EMAIL_PASSWORD")
         # self.db = mysql.connector.connect(
         # host="localhost",
         # user = "root",
@@ -19,6 +24,7 @@ class SRMBot(commands.Bot):
         # database = "srmbot"
         # )
         # self.c = self.db.cursor(buffered=True)
+
 
     # set-up for mongo db atlas
     # connection string to be used for connection to mongodb atlas 
@@ -61,6 +67,12 @@ class SRMBot(commands.Bot):
         unverified_user_id = self.verification_data.insert_one(raw_data).inserted_id
         print(f"unverufied user with id {unverified_user_id} has been created!")
 
+    async def setup_hook(self):
+        self.tree.copy_global_to(guild=discord.Object(self.TEST_GUILD))
+        await self.tree.sync(guild=discord.Object(self.TEST_GUILD))
+
+
+
     def _member_count(self):
         m = 0
         for guilds in self.guilds:
@@ -71,9 +83,11 @@ class SRMBot(commands.Bot):
         await self.wait_until_ready()
         for filename in os.listdir("cogs"):
             if filename.endswith(".py"):
-                self.load_extension(f"cogs.{filename[:-3]}")
+                await self.load_extension(f"cogs.{filename[:-3]}")
                 print(f"Loaded {filename[:-3]}")
-        print("Loaded All Cogs")        
+        print("Loaded All Cogs") 
+
+        await self.setup_hook()       
 
     async def paginate(self,
     channel,
@@ -154,9 +168,11 @@ async def get_prefix(client,message):
 # Initializing the bot object 
 client = SRMBot(command_prefix = get_prefix ,intents=discord.Intents.all(), case_insensitive = True)
 
-### ENV VARIABLES ###
-load_dotenv()
 
+
+
+
+### ENV VARIABLES ###
 TOKEN  = os.getenv("TOKEN")
 
 def is_admin():
@@ -170,28 +186,33 @@ def is_admin():
 async def on_connect():
     client.loop.create_task(client.on_ready_but_once())
     print(f"Logged In As {client.user.name}")
-    client.load_extension("jishaku")
+    await client.load_extension("jishaku")
 
 @client.command()
 @is_admin()
 async def load(ctx, extention):
-    client.load_extension(f"cogs.{extention}")
+    await client.load_extension(f"cogs.{extention}")
 
 @client.command()
 @is_admin()
 async def unload(ctx, extention):
-    client.unload_extension(f"cogs.{extention}")
+    await client.unload_extension(f"cogs.{extention}")
 
 @client.command()
 @is_admin()
 async def reload(ctx, extention):
-    client.reload_extension(f"cogs.{extention}")
+    await client.reload_extension(f"cogs.{extention}")
 
 @client.command()
 @is_admin()
 async def logout(ctx):
-    ch = await client.fetch_channel(861189076038975489)
-    await ch.send("Bot Logging Out, ByeBye!👋")
-    await client.logout()
+    await ctx.send("Bot Logging Out, ByeBye!👋")
+    await client.close()
+
+@client.tree.command()
+async def hello(interaction: discord.Interaction):
+    """Says hello!"""
+    await interaction.response.send_message(f'Hi, {interaction.user.mention}')
+
 
 client.run(TOKEN)
