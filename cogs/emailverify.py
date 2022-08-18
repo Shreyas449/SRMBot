@@ -11,7 +11,12 @@ from email.message import EmailMessage
 class EmailVerify(commands.Cog):
     def __init__(self , client):
         self.client = client
-        
+    
+    ###################
+    ####ADD EMBEDS
+
+
+
     @app_commands.command(name="verify-outsiders",description="show all db values")
     async def verify_outsiders(self, interaction: discord.Interaction):
         await interaction.response.send_message(f'Hi, {interaction.user.mention}, please be patient a staff member will attend you soon.')
