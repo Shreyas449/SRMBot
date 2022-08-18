@@ -15,33 +15,24 @@ class SRMBot(commands.Bot):
         super().__init__(**kwargs)
         self.OWNERS = [384643376055844864,759817307957493800,528856976432693259]
         self.TEST_GUILD = 838637230888845312
-        self.BOT_EMAIL_ID = "srmdiscord@gmail.com"
+        self.BOT_EMAIL_ID = os.getenv('BOT_EMAIL_ID')
         self.BOT_EMAIL_PASSWORD = os.getenv("BOT_EMAIL_PASSWORD")
-        # self.db = mysql.connector.connect(
-        # host="localhost",
-        # user = "root",
-        # passwd = "root",
-        # database = "srmbot"
-        # )
-        # self.c = self.db.cursor(buffered=True)
+        self.MONGODB_USER = os.getenv("MONGODB_USER")
+        self.MONGODB_PASS = os.getenv("MONGODB_PASS")
 
+        # set-up for mongo db atlas
+        # connection string to be used for connection to mongodb atlas 
+        self.connectionString = f"mongodb+srv://{self.MONGODB_USER}:{self.MONGODB_PASS}@cluster0.jk7ns7p.mongodb.net/?retryWrites=true&w=majority"
 
-    # set-up for mongo db atlas
-    # connection string to be used for connection to mongodb atlas 
-    connectionString = "mongodb+srv://username:password@cluster0.xc7pshk.mongodb.net/test"
-
-    # connecting to the database 
-    client = pymongo.MongoClient(connectionString)
+ 
+        self.db_client = pymongo.MongoClient(self.connectionString)      # connecting to the database
 
     # creating a database named srm_bot_database --> if the database already exist then it will connect to it directly
-    srm_bot_database = client['srm_bot_database']
+        self.db = self.db_client['srm_bot_database']
 
     # creating a collection
-    # collection for verified users (user_data)
-    user_data = srm_bot_database.user_data
-
-    # collection to be used for verifing user (verification_data)
-    verification_data = srm_bot_database.verification_data
+        self.user_data = self.db.user_data     # collection for verified users (user_data)
+        self.verification_data = self.db.verification_data      # collection to be used for verifing user (verification_data)
 
     # use to insert data into the user_data collection --> this is the main collection where verified users data gets stored
     # refined data storage here
@@ -54,7 +45,6 @@ class SRMBot(commands.Bot):
         user_id = self.user_data.insert_one(user_data).inserted_id
         print(f"student with: \ninserted_id: {user_id} \nuid: {uid} \nname: {name} \nstud_mail: {stu_mail} \nhas been verified and created!")
 
-
     # use this to insert data into the verification_data collection --> this is the temporary data collection where all the data gets stored
     # raw data storage here
     def insert_verification_data(self,uid, mail_id, otp, attemps):
@@ -65,13 +55,45 @@ class SRMBot(commands.Bot):
             "attempts": attemps
         }
         unverified_user_id = self.verification_data.insert_one(raw_data).inserted_id
-        print(f"unverufied user with id {unverified_user_id} has been created!")
+        print(f"unverified user with id {unverified_user_id} has been created!")
+
+    async def get_row(self,collection,key = None,value = None):
+        if collection == "user_data":
+            if key == None:
+                row = self.user_data.find_one()
+            else:
+                row = self.user_data.find_one({key:value})
+        elif collection == "verification_data":
+            if key == None:
+                row = self.verification_data.find_one()
+            else:
+                row = self.verification_data.find_one({key:value})                         
+        return row
+    
+    async def delete_row(self,collection,key = None,value = None):
+        if collection == "user_data":
+            if key == None:
+                row = self.user_data.delete_one()
+            else:
+                row = self.user_data.delete_one({key:value})
+        elif collection == "verification_data":
+            if key == None:
+                row = self.verification_data.delete_one()
+            else:
+                row = self.verification_data.delete_one({key:value})                         
+        return row
+
+    async def update_row(self,collection,old_value,new_value):        
+        if collection == "user_data":
+            self.user_data.update_one(old_value,{"$set":new_value})
+        elif collection == "verification_data":
+            self.verification_data.update_one(old_value,{"$set":new_value})
+
+    #############################################
 
     async def setup_hook(self):
         self.tree.copy_global_to(guild=discord.Object(self.TEST_GUILD))
         await self.tree.sync(guild=discord.Object(self.TEST_GUILD))
-
-
 
     def _member_count(self):
         m = 0
