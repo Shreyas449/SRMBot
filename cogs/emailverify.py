@@ -21,9 +21,9 @@ class EmailVerify(commands.Cog):
     @app_commands.command(name="verify", description="Use this command to verify, this command only verifies SRM Students.")
     async def verify(self ,interaction: discord.Interaction, mail:str):
         await interaction.response.defer(thinking=True) 
-        # if mail[-13::1] != "srmist.edu.in":
-        #     await interaction.response.send_message("Sorry this command is only for verifying SRM Students. Use ____ command.")
-        #     return
+        if mail[-13::1] != "srmist.edu.in":
+            await interaction.response.send_message("Sorry this command is only for verifying SRM Students. Use verify-outsiders command instead.")
+            return
 
         ### DB check if user ID  is present in the database        
             ###nested if to check if already register user has verified role or now
