@@ -3,23 +3,97 @@ from discord.ext import commands
 from discord.utils import get
 import os
 from dotenv import load_dotenv
+import pymongo
+from discord import app_commands
 
 
 
 ### MAIN BOT CLASS ###
-
+load_dotenv()
 class SRMBot(commands.Bot):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.OWNERS = [384643376055844864,759817307957493800,528856976432693259]
-        # self.db = mysql.connector.connect(
-        # host="localhost",
-        # user = "root",
-        # passwd = "root",
-        # database = "srmbot"
-        # )
-        # self.c = self.db.cursor(buffered=True)
+        self.TEST_GUILD = 838637230888845312
+        self.BOT_EMAIL_ID = os.getenv('BOT_EMAIL_ID')
+        self.BOT_EMAIL_PASSWORD = os.getenv("BOT_EMAIL_PASSWORD")
+        self.MONGODB_USER = os.getenv("MONGODB_USER")
+        self.MONGODB_PASS = os.getenv("MONGODB_PASS")
 
+        # set-up for mongo db atlas
+        # connection string to be used for connection to mongodb atlas 
+        self.connectionString = f"mongodb+srv://{self.MONGODB_USER}:{self.MONGODB_PASS}@cluster0.jk7ns7p.mongodb.net/?retryWrites=true&w=majority"
+
+ 
+        self.db_client = pymongo.MongoClient(self.connectionString)      # connecting to the database
+
+    # creating a database named srm_bot_database --> if the database already exist then it will connect to it directly
+        self.db = self.db_client['srm_bot_database']
+
+    # creating a collection
+        self.user_data = self.db.user_data     # collection for verified users (user_data)
+        self.verification_data = self.db.verification_data      # collection to be used for verifing user (verification_data)
+
+    # use to insert data into the user_data collection --> this is the main collection where verified users data gets stored
+    # refined data storage here
+    def insert_user_data(self,uid,name,stu_mail):
+        user_data = {
+            "uid": uid,
+            "name": name,
+            "stu_mail": stu_mail
+        }
+        user_id = self.user_data.insert_one(user_data).inserted_id
+        print(f"student with: \ninserted_id: {user_id} \nuid: {uid} \nname: {name} \nstud_mail: {stu_mail} \nhas been verified and created!")
+
+    # use this to insert data into the verification_data collection --> this is the temporary data collection where all the data gets stored
+    # raw data storage here
+    def insert_verification_data(self,uid, mail_id, otp, attemps):
+        raw_data = {
+            "uid": uid,
+            "mail_id": mail_id,
+            "otp": otp,
+            "attempts": attemps
+        }
+        unverified_user_id = self.verification_data.insert_one(raw_data).inserted_id
+        print(f"unverified user with id {unverified_user_id} has been created!")
+
+    async def get_row(self,collection,key = None,value = None):
+        if collection == "user_data":
+            if key == None:
+                row = self.user_data.find_one()
+            else:
+                row = self.user_data.find_one({key:value})
+        elif collection == "verification_data":
+            if key == None:
+                row = self.verification_data.find_one()
+            else:
+                row = self.verification_data.find_one({key:value})                         
+        return row
+    
+    async def delete_row(self,collection,key = None,value = None):
+        if collection == "user_data":
+            if key == None:
+                row = self.user_data.delete_one()
+            else:
+                row = self.user_data.delete_one({key:value})
+        elif collection == "verification_data":
+            if key == None:
+                row = self.verification_data.delete_one()
+            else:
+                row = self.verification_data.delete_one({key:value})                         
+        return row
+
+    async def update_row(self,collection,old_value,new_value):        
+        if collection == "user_data":
+            self.user_data.update_one(old_value,{"$set":new_value})
+        elif collection == "verification_data":
+            self.verification_data.update_one(old_value,{"$set":new_value})
+
+    #############################################
+
+    async def setup_hook(self):
+        self.tree.copy_global_to(guild=discord.Object(self.TEST_GUILD))
+        await self.tree.sync(guild=discord.Object(self.TEST_GUILD))
 
     def _member_count(self):
         m = 0
@@ -31,9 +105,11 @@ class SRMBot(commands.Bot):
         await self.wait_until_ready()
         for filename in os.listdir("cogs"):
             if filename.endswith(".py"):
-                self.load_extension(f"cogs.{filename[:-3]}")
+                await self.load_extension(f"cogs.{filename[:-3]}")
                 print(f"Loaded {filename[:-3]}")
-        print("Loaded All Cogs")        
+        print("Loaded All Cogs") 
+
+        await self.setup_hook()       
 
     async def paginate(self,
     channel,
@@ -114,9 +190,11 @@ async def get_prefix(client,message):
 # Initializing the bot object 
 client = SRMBot(command_prefix = get_prefix ,intents=discord.Intents.all(), case_insensitive = True)
 
-### ENV VARIABLES ###
-load_dotenv()
 
+
+
+
+### ENV VARIABLES ###
 TOKEN  = os.getenv("TOKEN")
 
 def is_admin():
@@ -130,28 +208,33 @@ def is_admin():
 async def on_connect():
     client.loop.create_task(client.on_ready_but_once())
     print(f"Logged In As {client.user.name}")
-    client.load_extension("jishaku")
+    await client.load_extension("jishaku")
 
 @client.command()
 @is_admin()
 async def load(ctx, extention):
-    client.load_extension(f"cogs.{extention}")
+    await client.load_extension(f"cogs.{extention}")
 
 @client.command()
 @is_admin()
 async def unload(ctx, extention):
-    client.unload_extension(f"cogs.{extention}")
+    await client.unload_extension(f"cogs.{extention}")
 
 @client.command()
 @is_admin()
 async def reload(ctx, extention):
-    client.reload_extension(f"cogs.{extention}")
+    await client.reload_extension(f"cogs.{extention}")
 
 @client.command()
 @is_admin()
 async def logout(ctx):
-    ch = await client.fetch_channel(861189076038975489)
-    await ch.send("Bot Logging Out, ByeBye!👋")
-    await client.logout()
+    await ctx.send("Bot Logging Out, ByeBye!👋")
+    await client.close()
+
+@client.tree.command()
+async def hello(interaction: discord.Interaction):
+    """Says hello!"""
+    await interaction.response.send_message(f'Hi, {interaction.user.mention}')
+
 
 client.run(TOKEN)
