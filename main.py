@@ -20,6 +20,8 @@ class SRMBot(commands.Bot):
         self.MONGODB_USER = os.getenv("MONGODB_USER")
         self.MONGODB_PASS = os.getenv("MONGODB_PASS")
 
+        self.COLOUR = 0x0c4da2
+
         # set-up for mongo db atlas
         # connection string to be used for connection to mongodb atlas 
         self.connectionString = f"mongodb+srv://{self.MONGODB_USER}:{self.MONGODB_PASS}@cluster0.jk7ns7p.mongodb.net/?retryWrites=true&w=majority"
