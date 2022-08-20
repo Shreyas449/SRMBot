@@ -18,7 +18,7 @@ If the user does gets verified then he/she gets a `verified` role in the server.
 ### Scalability
 We are totally aware of the problem faced by programmers when they try to write the bot in just one file.
 
-If you are trying to use the bot for just a couple of commands then using a `if/else if block` is not a big problem. But if you want to make your bot future proof then we recommend you to use [cogs]().
+If you are trying to use the bot for just a couple of commands then using a `if/else if block` is not a big problem. But if you want to make your bot future proof then we recommend you to use [cogs](https://github.com/Shreyas449/SRMBot/tree/master/cogs).
 
 With the help of cogs you can distribute your code into different files which makes the code base more readable and professional. That way you can add more features to the bot without doing much work.
 
