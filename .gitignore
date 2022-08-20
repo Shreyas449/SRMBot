@@ -1,4 +1,4 @@
 .env 
-./cogs/__pycache__/
-./cogs/ownercmds.py
+/cogs/__pycache__
+/cogs/ownercmds.py
 random.py
