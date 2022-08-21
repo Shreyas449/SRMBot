@@ -14,7 +14,7 @@ class SRMBot(commands.Bot):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.OWNERS = [384643376055844864,759817307957493800,528856976432693259]
-        self.TEST_GUILD = 838637230888845312
+        self.TEST_GUILD = 908203872454062111
         self.BOT_EMAIL_ID = os.getenv('BOT_EMAIL_ID')
         self.BOT_EMAIL_PASSWORD = os.getenv("BOT_EMAIL_PASSWORD")
         self.MONGODB_USER = os.getenv("MONGODB_USER")

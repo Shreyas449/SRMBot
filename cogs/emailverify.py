@@ -38,7 +38,8 @@ class EmailVerify(commands.Cog):
             member = interaction.guild.get_member(interaction.user.id)
             roles = member.roles
             if "Verified" not in roles:
-                await member.add_roles(interaction.guild.get_role(1007964811239378954))
+                role = member = discord.utils.find(lambda m: m.name == 'Verified', interaction.guild.roles)
+                await member.add_roles(role)
 
 
         ### DB add row in verification_data
@@ -83,7 +84,8 @@ class EmailVerify(commands.Cog):
             embed = discord.Embed(colour=self.client.COLOUR,description="OTP matched, you'll be given the Verified role now.")
             await interaction.followup.send(embed=embed)
             member = interaction.guild.get_member(interaction.user.id)
-            await member.add_roles(interaction.guild.get_role(1007964811239378954))
+            role = member = discord.utils.find(lambda m: m.name == 'Verified', interaction.guild.roles)
+            await member.add_roles(role)
         else:
             tries = 3-row["attempts"] 
             embed = discord.Embed(colour=self.client.COLOUR,description=f"OTP Not Matched, you have {tries} more tries.")
