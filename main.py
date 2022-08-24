@@ -38,18 +38,17 @@ class SRMBot(commands.Bot):
 
     # use to insert data into the user_data collection --> this is the main collection where verified users data gets stored
     # refined data storage here
-    def insert_user_data(self,uid,name,stu_mail):
+    async def insert_user_data(self,uid,stu_mail):
         user_data = {
             "uid": uid,
-            "name": name,
             "stu_mail": stu_mail
         }
         user_id = self.user_data.insert_one(user_data).inserted_id
-        print(f"student with: \ninserted_id: {user_id} \nuid: {uid} \nname: {name} \nstud_mail: {stu_mail} \nhas been verified and created!")
+        print(f"student with: \ninserted_id: {user_id} \nuid: {uid} \nstud_mail: {stu_mail} \nhas been verified and created!")
 
     # use this to insert data into the verification_data collection --> this is the temporary data collection where all the data gets stored
     # raw data storage here
-    def insert_verification_data(self,uid, mail_id, otp, attemps):
+    async def insert_verification_data(self,uid, mail_id, otp, attemps):
         raw_data = {
             "uid": uid,
             "mail_id": mail_id,
